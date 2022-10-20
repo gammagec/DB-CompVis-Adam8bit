@@ -8,7 +8,7 @@ from torchvision import transforms
 import random
 
 training_templates_smallest = [
-    'photo of ligam {}',
+    'photo of {} {}',
 ]
 
 reg_templates_smallest = [
@@ -148,10 +148,11 @@ class PersonalizedBase(Dataset):
                  coarse_class_text=None,
                  reg = False,
                  max_images = None,
+                 subject = 'sks'
                  ):
 
+        self.subject = subject
         self.data_root = data_root
-
         self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
 
         # self._length = len(self.image_paths)
@@ -183,6 +184,9 @@ class PersonalizedBase(Dataset):
         self.flip = transforms.RandomHorizontalFlip(p=flip_p)
         self.reg = reg
 
+    def setToken(token):
+        self.token = token
+
     def __len__(self):
         return self._length
 
@@ -198,7 +202,7 @@ class PersonalizedBase(Dataset):
             placeholder_string = f"{self.coarse_class_text} {placeholder_string}"
 
         if not self.reg:
-            text = random.choice(training_templates_smallest).format(placeholder_string)
+            text = random.choice(training_templates_smallest).format(self.subject, placeholder_string)
         else:
             text = random.choice(reg_templates_smallest).format(placeholder_string)
             

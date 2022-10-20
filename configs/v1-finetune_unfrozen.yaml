@@ -97,11 +97,20 @@ data:
         repeats: 1
         flip_p: 0.0
         max_images: 17
+    validation:
+      target: ldm.data.personalized.PersonalizedBase
+      params:
+        size: 512
+        set: val
+        per_image_tokens: false
+        repeats: 1
+        flip_p: 0.0
 
 lightning:
   modelcheckpoint:
     params:
-      every_n_train_steps: 500
+      every_n_epochs: 8
+      save_top_k: 20
   callbacks:
     image_logger:
       target: main.ImageLogger
@@ -114,10 +123,10 @@ lightning:
     benchmark: True
     amp_backend: native
     accelerator: gpu
-    max_steps: 2500
+    max_steps: 8000
     gpus: 0,
     precision: 32
     devices: 1
-    num_sanity_val_steps: 0
+    num_sanity_val_steps: 1
     #enable ddp if you want multiple GPUs
     #strategy: ddp

@@ -9,7 +9,7 @@ https://github.com/CompVis/taming-transformers
 import torch
 
 import torch.nn as nn
-import os
+import os, json
 import numpy as np
 import pytorch_lightning as pl
 from torch.optim.lr_scheduler import LambdaLR
@@ -1326,7 +1326,11 @@ class LatentDiffusion(DDPM):
         use_ddim = ddim_steps is not None
 
         log = dict()
-        batch = batch[0]
+        try:
+            batch = batch[0]
+        except KeyError as error:
+            print("Key doesn't exist in batch")
+            return log
         z, c, x, xrec, xc = self.get_input(batch, self.first_stage_key,
                                            return_first_stage_outputs=True,
                                            force_c_encode=True,

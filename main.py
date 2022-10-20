@@ -69,6 +69,13 @@ def get_parser(**parser_kwargs):
         help="resume from logdir or checkpoint in logdir",
     )
     parser.add_argument(
+        "--subject",
+        nargs="?",
+        type=str,
+        help="token to use for the subject of training",
+        const=True,
+    )
+    parser.add_argument(
         "-b",
         "--base",
         nargs="*",
@@ -620,16 +627,11 @@ if __name__ == "__main__":
         lightning_config.trainer = trainer_config
 
         # model
-
-        # config.model.params.personalization_config.params.init_word = opt.init_word
-        # config.model.params.personalization_config.params.embedding_manager_ckpt = opt.embedding_manager_ckpt
-        # config.model.params.personalization_config.params.placeholder_tokens = opt.placeholder_tokens
-
-        # if opt.init_word:
-        #     config.model.params.personalization_config.params.initializer_words[0] = opt.init_word
             
         config.data.params.train.params.placeholder_token = opt.class_word
         config.data.params.reg.params.placeholder_token = opt.class_word
+        config.data.params.validation.params.placeholder_token = opt.class_word
+        config.data.params.train.params.subject = opt.subject
 
         if opt.actual_resume:
             model = load_model_from_config(config, opt.actual_resume)
@@ -672,15 +674,16 @@ if __name__ == "__main__":
             "target": "pytorch_lightning.callbacks.ModelCheckpoint",
             "params": {
                 "dirpath": ckptdir,
-                "filename": "{epoch:06}",
+                "filename": "{epoch:06}-{step:06}-{val_loss:.4f}",
                 "verbose": True,
                 "save_last": True,
+                "save_weights_only": True,
             }
         }
         if hasattr(model, "monitor"):
             print(f"Monitoring {model.monitor} as checkpoint metric.")
             default_modelckpt_cfg["params"]["monitor"] = model.monitor
-            default_modelckpt_cfg["params"]["save_top_k"] = 1
+#            default_modelckpt_cfg["params"]["save_top_k"] = 1
 
         if "modelcheckpoint" in lightning_config:
             modelckpt_cfg = lightning_config.modelcheckpoint
@@ -760,11 +763,13 @@ if __name__ == "__main__":
         trainer_kwargs["max_steps"] = trainer_opt.max_steps
 
         trainer = Trainer.from_argparse_args(trainer_opt, **trainer_kwargs)
-        trainer.logdir = logdir  ###
+        trainer.logdir = logdir
+       
 
         # data
         config.data.params.train.params.data_root = opt.data_root
         config.data.params.reg.params.data_root = opt.reg_data_root
+        config.data.params.validation.params.data_root = opt.data_root
         data = instantiate_from_config(config.data)
 
         data = instantiate_from_config(config.data)
