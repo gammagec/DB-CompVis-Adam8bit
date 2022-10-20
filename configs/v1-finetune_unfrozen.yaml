@@ -86,7 +86,7 @@ data:
         set: train
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.0
+        flip_p: 0.5
     reg:
       target: ldm.data.personalized.PersonalizedBase
       params:
@@ -95,8 +95,8 @@ data:
         reg: true
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.0
-        max_images: 17
+        flip_p: 0.5
+        max_images: 102
     validation:
       target: ldm.data.personalized.PersonalizedBase
       params:
@@ -104,13 +104,14 @@ data:
         set: val
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.0
+        flip_p: 0.5
 
 lightning:
   modelcheckpoint:
     params:
       every_n_epochs: 8
       save_top_k: 20
+      save_weights_only: true
   callbacks:
     image_logger:
       target: main.ImageLogger
@@ -120,7 +121,7 @@ lightning:
         increase_log_steps: False
 
   trainer:
-    benchmark: True
+    benchmark: true
     amp_backend: native
     accelerator: gpu
     max_steps: 8000

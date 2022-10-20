@@ -674,10 +674,9 @@ if __name__ == "__main__":
             "target": "pytorch_lightning.callbacks.ModelCheckpoint",
             "params": {
                 "dirpath": ckptdir,
-                "filename": "{epoch:06}-{step:06}-{val_loss:.4f}",
+                "filename": "{epoch:06}-{step:06}-{loss_simple_ema:.6f}",
                 "verbose": True,
                 "save_last": True,
-                "save_weights_only": True,
             }
         }
         if hasattr(model, "monitor"):
