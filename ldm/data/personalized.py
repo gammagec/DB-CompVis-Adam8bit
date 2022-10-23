@@ -15,6 +15,32 @@ reg_templates_smallest = [
     '{}',
 ]
 
+training_captions = {
+    "1": "a {} {} sitting on a couch smiling for the camera with a smile on her face and a necklace on her neck, by Rumiko Takahashi",
+    "2": "a man and a {} {} standing next to a waterfall smiling for the camera with a smile on their face, by Junji Ito",
+    "3": "a {} {} smiling and holding a plate of food in her hand and a microwave in the background with a sign on it, by Naoko Takeuchi",
+    "4": "a {} {} with a smile on her face near the water and a beach with boats in the background and a pier in the foreground, by Naoko Takeuchi",
+    "5": "a {} {} smiling at the camera, by Cindy Sherman",
+    "6": "a {} {} with a blue scarf around her neck smiling at the camera with a sunflower in the background, by Naoko Takeuchi",
+    "7": "a {} {} smiling for the camera with a car in the background and a parking lot behind her, by Junji Ito",
+    "8": "a {} {} with a smile on her face taking a selfie with a camera phone in front of a wooden bench, by Studio Ghibli",
+    "9": "a {} {} with glasses on her head and a wooden background behind her is smiling at the camera and has a camera strap around her neck, by Edith Lawrence",
+    "10": "a {} {} with her arms up in the air and a rack of clothes behind her with her hands up, by Junji Ito",
+    "11": "a {} {} standing in front of a waterfall and bridge with a train on it's tracks in the background, by Chen Daofu",
+    "12": "a {} {} with a green shirt smiling at the camera, by Inio Asano",
+    "13": "a {} {} with two bows on her head smiling at the camera with a smile on her face and a hair clip in her hair, by Rumiko Takahashi",
+    "14": "a {} {} smiling for a picture at a sporting event in the sun, by Rumiko Takahashi",
+    "15": "a {} {} wearing sunglasses and a flower in her hair smiling for the camera with a tree in the background, by Naoko Takeuchi",
+    "16": "a {} {} with a smiley face on her head wearing a yellow hat and smiling at the camera, by Michelangelo Merisi Da Caravaggio",
+    "17": "a {} {} with a smile on her face and a man in the background taking a picture of her with a cell phone, by Rumiko Takahashi",
+    "18": "a {} {} with a smile on her face and a black jacket on her shoulders and a pink shirt on her shirt, by Rumiko Takahashi",
+    "19": "a {} {} with a smile on her face and a pink shirt on her shirt is smiling at the camera, by Rumiko Takahashi",
+    "20": "a {} {} with a smile on her face and a black shirt on her shirt is smiling and looking to the side, by Rumiko Takahashi",
+    "21": "a {} {} is smiling in the snow with a scarf around her neck and a tree in the background with snow on it, by Rumiko Takahashi",
+    "22": "a {} {} is smiling for the camera while sitting down with a man with glasses in the background and a red chair, by Junji Ito",
+    "23": "a {} {} standing on a beach next to the ocean with a truck in the background and a person taking a picture, by Junji Ito",
+}
+
 imagenet_templates_small = [
     'a photo of a {}',
     'a rendering of a {}',
@@ -148,7 +174,7 @@ class PersonalizedBase(Dataset):
                  coarse_class_text=None,
                  reg = False,
                  max_images = None,
-                 subject = 'sks'
+                 subject = 'sks',
                  ):
 
         self.subject = subject
@@ -192,7 +218,8 @@ class PersonalizedBase(Dataset):
 
     def __getitem__(self, i):
         example = {}
-        image = Image.open(self.image_paths[i % self.num_images])
+        imagepath = self.image_paths[i % self.num_images]
+        image = Image.open(imagepath)
 
         if not image.mode == "RGB":
             image = image.convert("RGB")
@@ -201,7 +228,11 @@ class PersonalizedBase(Dataset):
         if self.coarse_class_text:
             placeholder_string = f"{self.coarse_class_text} {placeholder_string}"
 
-        if not self.reg:
+        name = os.path.splitext(os.path.basename(imagepath))[0]
+        print(training_captions)
+        if not self.reg and name in training_captions:
+            text = training_captions[name].format(self.subject, placeholder_string)
+        elif not self.reg:
             text = random.choice(training_templates_smallest).format(self.subject, placeholder_string)
         else:
             text = random.choice(reg_templates_smallest).format(placeholder_string)

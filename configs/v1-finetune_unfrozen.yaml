@@ -86,7 +86,7 @@ data:
         set: train
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.5
+        flip_p: 0.0
     reg:
       target: ldm.data.personalized.PersonalizedBase
       params:
@@ -95,8 +95,8 @@ data:
         reg: true
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.5
-        max_images: 102
+        flip_p: 0.0
+        max_images: 23
     validation:
       target: ldm.data.personalized.PersonalizedBase
       params:
@@ -104,7 +104,7 @@ data:
         set: val
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.5
+        flip_p: 0.0
 
 lightning:
   modelcheckpoint:
