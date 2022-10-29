@@ -1,4 +1,4 @@
-import os
+import os, yaml
 import numpy as np
 import PIL
 from PIL import Image
@@ -14,32 +14,6 @@ training_templates_smallest = [
 reg_templates_smallest = [
     '{}',
 ]
-
-training_captions = {
-    "1": "a {} {} sitting on a couch smiling for the camera with a smile on her face and a necklace on her neck, by Rumiko Takahashi",
-    "2": "a man and a {} {} standing next to a waterfall smiling for the camera with a smile on their face, by Junji Ito",
-    "3": "a {} {} smiling and holding a plate of food in her hand and a microwave in the background with a sign on it, by Naoko Takeuchi",
-    "4": "a {} {} with a smile on her face near the water and a beach with boats in the background and a pier in the foreground, by Naoko Takeuchi",
-    "5": "a {} {} smiling at the camera, by Cindy Sherman",
-    "6": "a {} {} with a blue scarf around her neck smiling at the camera with a sunflower in the background, by Naoko Takeuchi",
-    "7": "a {} {} smiling for the camera with a car in the background and a parking lot behind her, by Junji Ito",
-    "8": "a {} {} with a smile on her face taking a selfie with a camera phone in front of a wooden bench, by Studio Ghibli",
-    "9": "a {} {} with glasses on her head and a wooden background behind her is smiling at the camera and has a camera strap around her neck, by Edith Lawrence",
-    "10": "a {} {} with her arms up in the air and a rack of clothes behind her with her hands up, by Junji Ito",
-    "11": "a {} {} standing in front of a waterfall and bridge with a train on it's tracks in the background, by Chen Daofu",
-    "12": "a {} {} with a green shirt smiling at the camera, by Inio Asano",
-    "13": "a {} {} with two bows on her head smiling at the camera with a smile on her face and a hair clip in her hair, by Rumiko Takahashi",
-    "14": "a {} {} smiling for a picture at a sporting event in the sun, by Rumiko Takahashi",
-    "15": "a {} {} wearing sunglasses and a flower in her hair smiling for the camera with a tree in the background, by Naoko Takeuchi",
-    "16": "a {} {} with a smiley face on her head wearing a yellow hat and smiling at the camera, by Michelangelo Merisi Da Caravaggio",
-    "17": "a {} {} with a smile on her face and a man in the background taking a picture of her with a cell phone, by Rumiko Takahashi",
-    "18": "a {} {} with a smile on her face and a black jacket on her shoulders and a pink shirt on her shirt, by Rumiko Takahashi",
-    "19": "a {} {} with a smile on her face and a pink shirt on her shirt is smiling at the camera, by Rumiko Takahashi",
-    "20": "a {} {} with a smile on her face and a black shirt on her shirt is smiling and looking to the side, by Rumiko Takahashi",
-    "21": "a {} {} is smiling in the snow with a scarf around her neck and a tree in the background with snow on it, by Rumiko Takahashi",
-    "22": "a {} {} is smiling for the camera while sitting down with a man with glasses in the background and a red chair, by Junji Ito",
-    "23": "a {} {} standing on a beach next to the ocean with a truck in the background and a person taking a picture, by Junji Ito",
-}
 
 imagenet_templates_small = [
     'a photo of a {}',
@@ -159,6 +133,8 @@ per_img_token_list = [
     'א', 'ב', 'ג', 'ד', 'ה', 'ו', 'ז', 'ח', 'ט', 'י', 'כ', 'ל', 'מ', 'נ', 'ס', 'ע', 'פ', 'צ', 'ק', 'ר', 'ש', 'ת',
 ]
 
+training_captions = {}
+
 class PersonalizedBase(Dataset):
     def __init__(self,
                  data_root,
@@ -179,9 +155,27 @@ class PersonalizedBase(Dataset):
 
         self.subject = subject
         self.data_root = data_root
-        self.image_paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
+        paths = [os.path.join(self.data_root, file_path) for file_path in os.listdir(self.data_root)]
+        captions_config_path = None
+        image_paths = []
+        for path in paths:
+            if os.path.basename(path) == 'captions.yaml':
+                captions_config_path = path
+            else:
+                image_paths.append(path)
 
-        # self._length = len(self.image_paths)
+        if captions_config_path != None:
+            with open(captions_config_path, "r") as stream:
+                try:
+                    captions_config = yaml.safe_load(stream)
+                    global training_captions
+                    training_captions = captions_config['captions']
+                    print(f'got captions {training_captions}')
+                except yaml.YAMLError as exc:
+                    print(exc)
+
+        self.image_paths = image_paths
+
         self.num_images = len(self.image_paths)
         if max_images != None:
             self.num_images = min(self.num_images, max_images)
@@ -229,7 +223,6 @@ class PersonalizedBase(Dataset):
             placeholder_string = f"{self.coarse_class_text} {placeholder_string}"
 
         name = os.path.splitext(os.path.basename(imagepath))[0]
-        print(training_captions)
         if not self.reg and name in training_captions:
             text = training_captions[name].format(self.subject, placeholder_string)
         elif not self.reg:

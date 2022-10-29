@@ -14,7 +14,8 @@ model:
     channels: 4
     cond_stage_trainable: true   # Note: different from the one we trained before
     conditioning_key: crossattn
-    monitor: val/loss_simple_ema
+    #monitor: val/loss_simple_ema
+    monitor: train/loss_step
     scale_factor: 0.18215
     use_ema: False
     embedding_reg_weight: 0.0
@@ -86,7 +87,7 @@ data:
         set: train
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.0
+        flip_p: 0.5
     reg:
       target: ldm.data.personalized.PersonalizedBase
       params:
@@ -95,8 +96,8 @@ data:
         reg: true
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.0
-        max_images: 23
+        flip_p: 0.5
+        #max_images: 98
     validation:
       target: ldm.data.personalized.PersonalizedBase
       params:
@@ -104,7 +105,7 @@ data:
         set: val
         per_image_tokens: false
         repeats: 1
-        flip_p: 0.0
+        flip_p: 0.5
 
 lightning:
   modelcheckpoint:
@@ -112,6 +113,10 @@ lightning:
       every_n_epochs: 8
       save_top_k: 20
       save_weights_only: true
+      auto_insert_metric_name: false
+      filename: "{epoch:06}-{step:06}-{train/loss_simple_epoch:.6f}"
+      verbose: true
+      save_last: True
   callbacks:
     image_logger:
       target: main.ImageLogger

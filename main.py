@@ -672,11 +672,8 @@ if __name__ == "__main__":
         # specify which metric is used to determine best models
         default_modelckpt_cfg = {
             "target": "pytorch_lightning.callbacks.ModelCheckpoint",
-            "params": {
-                "dirpath": ckptdir,
-                "filename": "{epoch:06}-{step:06}-{loss_simple_ema:.6f}",
-                "verbose": True,
-                "save_last": True,
+            "params": {                
+                "dirpath": ckptdir
             }
         }
         if hasattr(model, "monitor"):
